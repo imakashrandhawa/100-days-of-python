@@ -1,4 +1,5 @@
 # TinDog Project
+This is my day-58 project of my 100-days-python journey. This is the site for startup TinDog. Everything on the site is built using Bootstrap. 
 
 HINT: To fiure out which Bootstrap components/snippets are used. Refer to the PDF below:
 https://github.com/appbrewery/tindog/blob/main/Bootstrap-snippets.pdf
