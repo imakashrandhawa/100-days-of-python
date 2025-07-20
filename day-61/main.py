@@ -4,7 +4,7 @@ from lib2to3.fixer_util import String
 
 from flask import Flask, render_template
 from flask_wtf import FlaskForm
-from wtforms.fields.simple import StringField
+from wtforms.fields.simple import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired
 
 '''
@@ -36,7 +36,8 @@ def login():
 
 class MyForm(FlaskForm):
     name=StringField('Name',validators=[DataRequired()])
-    password=StringField('Password',validators=[DataRequired()])
+    password=PasswordField('Password',validators=[DataRequired()])
+    submit=SubmitField(label="Log in")
 
 if __name__ == '__main__':
     app.run(debug=True)
