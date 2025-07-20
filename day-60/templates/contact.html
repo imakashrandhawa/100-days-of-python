@@ -32,12 +32,14 @@
           <form
             id="contactForm"
             name="sentMessage"
+            action="/form-entry"
+            method='post'
           >
             <div class="form-floating">
               <input
                 class="form-control"
                 id="name"
-                name="name"
+                name="username"
                 type="text"
                 placeholder="Enter your name..."
                 required
@@ -48,7 +50,7 @@
               <input
                 class="form-control"
                 id="email"
-                name="email"
+                name="emailaddress"
                 type="email"
                 placeholder="Enter your email..."
                 required
@@ -59,7 +61,7 @@
               <input
                 class="form-control"
                 id="phone"
-                name="phone"
+                name="phonenumber"
                 type="tel"
                 placeholder="Enter your phone number..."
                 required
@@ -70,7 +72,7 @@
               <textarea
                 class="form-control"
                 id="message"
-                name="message"
+                name="messageu"
                 placeholder="Enter your message here..."
                 required
                 style="height: 12rem"
@@ -78,14 +80,9 @@
               <label for="message">Message</label>
             </div>
             <br />
-            <button
-              class="btn btn-primary text-uppercase"
-              id="submitButton"
-              type="submit"
-            >
-              Send
-            </button>
-          </form>
+            <button type="submit" class="btn btn-primary">Send</button>
+              </form>
+
         </div>
       </div>
     </div>
