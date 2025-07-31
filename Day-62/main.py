@@ -20,7 +20,7 @@ This will install the packages from requirements.txt for this project.
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
-Bootstrap5(app)
+bootstrap=Bootstrap5(app)
 
 
 class CafeForm(FlaskForm):
