@@ -1,11 +1,10 @@
 import os
 
-from lib2to3.fixer_util import String
 
 from flask import Flask, render_template
 from flask_wtf import FlaskForm
 from wtforms.fields.simple import StringField, PasswordField, SubmitField
-from wtforms.validators import DataRequired
+from wtforms.validators import DataRequired, Email, Length
 
 '''
 Red underlines? Install the required packages first: 
@@ -29,14 +28,22 @@ app.secret_key=os.environ.get("SECRET_KEY")
 def home():
     return render_template('index.html')
 
-@app.route("/login")
+@app.route("/login", methods=['POST','GET'])
 def login():
     form=MyForm()
+    if form.validate_on_submit():
+        email=form.email.data
+        password=form.password.data
+        if email=="admin@email.com" and password=="12345678":
+            return render_template("success.html")
+        else:
+            return render_template("denied.html")
+
     return render_template("login.html",form=form)
 
 class MyForm(FlaskForm):
-    name=StringField('Name',validators=[DataRequired()])
-    password=PasswordField('Password',validators=[DataRequired()])
+    email=StringField('Email',validators=[DataRequired(),Email(message="Enter valid email")])
+    password=PasswordField('Password',validators=[DataRequired(),Length(min=8)])
     submit=SubmitField(label="Log in")
 
 if __name__ == '__main__':
