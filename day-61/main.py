@@ -2,7 +2,7 @@ import os
 from ensurepip import bootstrap
 
 from flask import Flask, render_template
-from flask_bootstrap import Bootstrap4
+from flask_bootstrap import Bootstrap5
 from flask_wtf import FlaskForm
 from wtforms.fields.simple import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, Email, Length
@@ -22,7 +22,7 @@ This will install the packages from requirements.txt for this project.
 
 
 app = Flask(__name__)
-bootstrap=Bootstrap4(app)
+bootstrap=Bootstrap5(app)
 app.secret_key=os.environ.get("SECRET_KEY")
 
 
