@@ -6,12 +6,11 @@
   </head>
   <body>
     <form action="" method="POST">
-      <label>Book Name</label>
-      <input type="text" />
-      <label>Book Author</label>
-      <input type="text" />
-      <label>Rating</label>
-      <input type="text" />
+      {% from 'bootstrap4/form.html' import render_field %}
+      {{ form.csrf_token }}
+      {{render_field(form.name) }}
+      {{render_field(form.author)}}
+      {{render_field(form.rating)}}
       <button type="submit">Add Book</button>
     </form>
   </body>
