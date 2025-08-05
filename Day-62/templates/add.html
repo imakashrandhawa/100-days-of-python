@@ -8,10 +8,22 @@
     <div class="col-sm-12 col-md-8">
 
       <h1>Add a new cafe into the database</h1>
+      {% from 'bootstrap4/form.html' import render_field %}
 
-      <!-- This is where your WTForm will go -->
+      <form method="POST" action="{{ url_for('add_cafe') }}">
+      {{ form.csrf_token() }}
+      {{ form.hidden_tag() }}
+      {{ render_field(form.cafe) }}
+      {{ render_field(form.location) }}
+      {{ render_field(form.open_time) }}
+      {{ render_field(form.close_time) }}
+      {{ render_field(form.coffee_rating) }}
+      {{ render_field(form.wifi_rating) }}
+      {{ render_field(form.power_availability) }}
+      {{ render_field(form.submit) }}
+      </form>
 
-	  <p class="space-above"><a href="#">See all cafes</a></p>
+	  <p class="space-above"><a href="{{url_for('cafes')}}">See all cafes</a></p>
 
     </div>
   </div>

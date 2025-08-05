@@ -14,7 +14,11 @@
         {% for cafe in cafes%}
         <tr>
           <th scope="row">{{cafe[0]}}</th>
-          <td>{{cafe[1]}}</td>
+          {% if cafe[1]=="Location"%}
+            <td>{{cafe[1]}}</td>
+          {% else %}
+          <td><a href="{{cafe[1]}}">Map Link</a></td>
+          {% endif %}
           <td>{{cafe[2]}}</td>
           <td>{{cafe[3]}}</td>
             <td>{{cafe[4]}}</td>
