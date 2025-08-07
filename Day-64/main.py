@@ -26,15 +26,50 @@ app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
 Bootstrap5(app)
 
 # CREATE DB
+class Base(DeclarativeBase):
+  pass
+
+db = SQLAlchemy(model_class=Base)
 
 
 # CREATE TABLE
+class Movie(db.Model):
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    title: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
+    year: Mapped[int] = mapped_column(Integer,nullable=False)
+    description: Mapped[str] = mapped_column(String(250),nullable=False)
+    rating: Mapped[float] = mapped_column(Float,nullable=False)
+    ranking: Mapped[int] = mapped_column(Integer, nullable=False)
+    review: Mapped[str] = mapped_column(String(250), nullable=False)
+    img_url: Mapped[str] = mapped_column(String(250), nullable=False)
+
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///movies-collection.db"
+db.init_app(app)
+
+second_movie = Movie(
+    title="Avatar The Way of Water",
+    year=2022,
+    description="Set more than a decade after the events of the first film, learn the story of the Sully family (Jake, Neytiri, and their kids), the trouble that follows them, the lengths they go to keep each other safe, the battles they fight to stay alive, and the tragedies they endure.",
+    rating=7.3,
+    ranking=9,
+    review="I liked the water.",
+    img_url="https://image.tmdb.org/t/p/w500/t6HIqrRAclMCA60NsSmeqe9RmNV.jpg"
+)
+
 
 
 @app.route("/")
 def home():
     return render_template("index.html")
 
+with app.app_context():
+    exists = db.session.execute(
+        db.select(Movie).filter_by(title=second_movie.title)
+    ).scalar_one_or_none()
+
+    if not exists:
+        db.session.add(second_movie)
+        db.session.commit()
 
 if __name__ == '__main__':
     app.run(debug=True)
