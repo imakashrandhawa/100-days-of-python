@@ -8,22 +8,22 @@
   <p class="description">These are my all-time favourite movies.</p>
    
   <div class="card" >
-    <div class="front" style="background-image: url('https://www.shortlist.com/media/images/2019/05/the-30-coolest-alternative-movie-posters-ever-2-1556670563-K61a-column-width-inline.jpg');">
-        <p class="large">1</p>
+    <div class="front" style="background-image: url({{movies[0].img_url}});">
+        <p class="large">{{movies[0].ranking}}</p>
     </div>
     <div class="back">
       <div>
-    <div class="title">Drive <span class="release_date">(2011)</span></div>
+    <div class="title">{{movies[0].title}}<span class="release_date">{{movies[0].year}}</span></div>
         <div class="rating">
-            <label>7.5</label>
+            <label>{{movies[0].rating}}</label>
           <i class="fas fa-star star"></i>
         </div>
-          <p class="review">"Loved it!"</p>
+          <p class="review">{{movies[0].review}}</p>
         <p class="overview">
-            A mysterious Hollywood stuntman and mechanic moonlights as a getaway driver and finds himself in trouble when he helps out his neighbor in this action drama.
+            {{movies[0].description}}
         </p>
 
-        <a href="#" class="button">Update</a>
+        <a href="{{url_for('edit',title=movies[0].title)}}" class="button">Update</a>
         <a href="#" class="button delete-button">Delete</a>
 
       </div>

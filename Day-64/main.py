@@ -60,7 +60,9 @@ second_movie = Movie(
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+    result = db.session.execute(db.select(Movie).order_by(Movie.id))
+    all_movies = result.scalars().all()
+    return render_template("index.html",movies=all_movies)
 
 with app.app_context():
     exists = db.session.execute(
@@ -70,6 +72,23 @@ with app.app_context():
     if not exists:
         db.session.add(second_movie)
         db.session.commit()
+
+class Edit(FlaskForm):
+    rating = StringField("Your Rating Out of 10")
+    review = StringField("Your Review")
+    submit = SubmitField('Done')
+
+@app.route("/edit/<string:title>",methods=["POST","GET"])
+def edit(title):
+    form=Edit()
+    movie = db.session.execute(db.select(Movie).where(Movie.title == title)).scalar()
+    if form.validate_on_submit():
+        movie_to_update = db.session.execute(db.select(Movie).where(Movie.title == title)).scalar()
+        movie_to_update.rating=form.rating.data
+        movie_to_update.review = form.review.data
+        db.session.commit()
+        return redirect(url_for('home'))
+    return render_template("edit.html",form=form,movies=movie)
 
 if __name__ == '__main__':
     app.run(debug=True)
