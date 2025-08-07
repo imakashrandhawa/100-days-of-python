@@ -11,7 +11,7 @@
       <p>Library is empty</p>
       {% else %}
       {% for book in all_books%}
-      <li style="font-weight: bold;">{{ book.title }} - {{ book.author }} - {{ book.rating }}/10</li>
+      <li style="font-weight: bold;"><a href="{{url_for('delete',i=book.id)}}">Delete</a>   {{ book.title }} - {{ book.author }} - {{ book.rating }}/10 <a href="{{url_for('edit',i=book.title)}}">Edit rating</a></li>
       {% endfor %}
       {% endif %}
     </ul>

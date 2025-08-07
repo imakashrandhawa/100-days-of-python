@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit</title>
+</head>
+<body>
+<h3>Book name: {{book.title}} </h3>
+<h3>Current Rating: {{book.rating}} </h3>
+<form action="" method="POST">
+      {% from 'bootstrap4/form.html' import render_field %}
+      {{ form.csrf_token }}
+      {{render_field(form.new_rating)}}
+      <button type="submit">Change Rating</button>
+</body>
+</html>

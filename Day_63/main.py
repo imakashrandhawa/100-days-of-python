@@ -37,13 +37,15 @@ class Form(FlaskForm):
     author=StringField("Author: ")
     rating=StringField("Rating: ")
 
+class Newform(FlaskForm):
+    new_rating=StringField(render_kw={"placeholder": "New Rating"})
+
 
 
 @app.route('/')
 def home():
-    result = db.session.execute(db.select(Book).order_by(Book.title))
+    result = db.session.execute(db.select(Book).order_by(Book.id))
     all_books = result.scalars().all()
-    print(all_books)
     return render_template("index.html", all_books=all_books)
 
 
@@ -71,6 +73,25 @@ def add():
         return redirect(url_for('home'))
 
     return render_template("add.html",form=form)
+
+@app.route("/edit/<string:i>",methods=["POST","GET"])
+def edit(i):
+    form = Newform()
+    book = db.session.execute(db.select(Book).where(Book.title == i)).scalar()
+    if form.validate_on_submit():
+        book_to_update = db.session.execute(db.select(Book).where(Book.title == i)).scalar()
+        book_to_update.rating=form.new_rating.data
+        db.session.commit()
+        return redirect(url_for('home'))
+    return render_template("edit.html",form=form,book=book)
+
+@app.route("/delete/<int:i>")
+def delete(i):
+    book_to_delete = db.session.execute(db.select(Book).where(Book.id == i)).scalar()
+    db.session.delete(book_to_delete)
+    db.session.commit()
+    return redirect(url_for('home'))
+
 
 with app.app_context():
     db.create_all()
