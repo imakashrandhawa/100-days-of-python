@@ -11,7 +11,7 @@
       <p>Library is empty</p>
       {% else %}
       {% for book in all_books%}
-      <li style="font-weight: bold;">{{ book[0]['title'] }}{{" - "}}{{ book[0]['author'] }}{{" - "}}{{ book[0]['rating'] }}{{"/10"}}</li>
+      <li style="font-weight: bold;">{{ book.title }} - {{ book.author }} - {{ book.rating }}/10</li>
       {% endfor %}
       {% endif %}
     </ul>
