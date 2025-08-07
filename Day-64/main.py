@@ -46,17 +46,6 @@ class Movie(db.Model):
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///movies-collection.db"
 db.init_app(app)
 
-second_movie = Movie(
-    title="Avatar The Way of Water",
-    year=2022,
-    description="Set more than a decade after the events of the first film, learn the story of the Sully family (Jake, Neytiri, and their kids), the trouble that follows them, the lengths they go to keep each other safe, the battles they fight to stay alive, and the tragedies they endure.",
-    rating=7.3,
-    ranking=9,
-    review="I liked the water.",
-    img_url="https://image.tmdb.org/t/p/w500/t6HIqrRAclMCA60NsSmeqe9RmNV.jpg"
-)
-
-
 
 @app.route("/")
 def home():
@@ -65,13 +54,7 @@ def home():
     return render_template("index.html",movies=all_movies)
 
 with app.app_context():
-    exists = db.session.execute(
-        db.select(Movie).filter_by(title=second_movie.title)
-    ).scalar_one_or_none()
-
-    if not exists:
-        db.session.add(second_movie)
-        db.session.commit()
+    db.session.commit()
 
 class Edit(FlaskForm):
     rating = StringField("Your Rating Out of 10")
@@ -89,6 +72,14 @@ def edit(title):
         db.session.commit()
         return redirect(url_for('home'))
     return render_template("edit.html",form=form,movies=movie)
+
+@app.route("/delete/<string:title>",methods=["POST","GET"])
+def delete(title):
+    book_to_delete = db.session.execute(db.select(Movie).where(Movie.title == title)).scalar()
+    db.session.delete(book_to_delete)
+    db.session.commit()
+    return redirect(url_for('home'))
+
 
 if __name__ == '__main__':
     app.run(debug=True)

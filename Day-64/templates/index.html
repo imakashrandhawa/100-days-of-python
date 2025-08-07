@@ -6,7 +6,7 @@
 <div class="container">
   <h1 class="heading">My Top 10 Movies</h1>
   <p class="description">These are my all-time favourite movies.</p>
-   
+    {% if movies.notnull %}
   <div class="card" >
     <div class="front" style="background-image: url({{movies[0].img_url}});">
         <p class="large">{{movies[0].ranking}}</p>
@@ -24,11 +24,12 @@
         </p>
 
         <a href="{{url_for('edit',title=movies[0].title)}}" class="button">Update</a>
-        <a href="#" class="button delete-button">Delete</a>
+        <a href="{{url_for('delete',title=movies[0].title)}}" class="button delete-button">Delete</a>
 
       </div>
     </div>
   </div>
+    {% endif %}
 </div>
 <div class="container text-center add">
 <a href="#" class="button">Add Movie</a>
