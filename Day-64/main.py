@@ -80,6 +80,38 @@ def delete(title):
     db.session.commit()
     return redirect(url_for('home'))
 
+class Add(FlaskForm):
+    title = StringField("Movie Title")
+    add = SubmitField('Add Movie')
+
+
+@app.route("/add",methods=["POST","GET"])
+def add():
+    form=Add()
+    list=[]
+    if form.validate_on_submit():
+        url = "https://api.themoviedb.org/3/search/movie"
+
+        params={
+            "query": form.title.data
+        }
+
+        headers = {
+            "accept": "application/json",
+            "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5OTNhODNiNjgxNjFkZDc1MzIzYWVhMGEwYWZlYmYwOCIsIm5iZiI6MTc1NDU4MTUzNS42NzI5OTk5LCJzdWIiOiI2ODk0Y2ExZmNiZDk1Mjc4YTkyOGE1MTQiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.HAKaGFLMVmbjoJOIlpv6YPDixo4yrjR5aIPMrma29_0"
+        }
+
+        response = (requests.get(url, headers=headers,params=params)).json()
+        results=response['results']
+        for result in results:
+            list.append(f"{result['title']} {result['release_date']}")
+        print(list)
+        return render_template("select.html", movies=list)
+
+
+    return render_template("add.html",form=form)
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
