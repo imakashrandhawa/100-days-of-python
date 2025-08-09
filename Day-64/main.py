@@ -5,7 +5,7 @@ from flask.cli import load_dotenv
 from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import Integer, String, Float
+from sqlalchemy import Integer, String, Float, nullslast
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
@@ -54,9 +54,21 @@ db.init_app(app)
 
 @app.route("/")
 def home():
-    result = db.session.execute(db.select(Movie).order_by(Movie.id))
-    all_movies = result.scalars().all()
-    return render_template("index.html",movies=all_movies)
+    movies = db.session.execute(
+        db.select(Movie).order_by(nullslast(Movie.rating.desc()))
+    ).scalars().all()
+    i=1
+    for movie in movies:
+        movie_to_update = db.session.execute(db.select(Movie).where(Movie.title == movie.title)).scalar()
+        movie_to_update.ranking = i
+        db.session.commit()
+        i+=1
+
+    new_movies = db.session.execute(
+        db.select(Movie).order_by(nullslast(Movie.rating.desc()))
+    ).scalars().all()
+
+    return render_template("index.html",movies=new_movies)
 
 with app.app_context():
     db.session.commit()
