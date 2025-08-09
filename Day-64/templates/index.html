@@ -6,21 +6,21 @@
 <div class="container">
   <h1 class="heading">My Top 10 Movies</h1>
   <p class="description">These are my all-time favourite movies.</p>
-    {% if movies.notnull %}
+    {% for movie in movies %}
   <div class="card" >
-    <div class="front" style="background-image: url({{movies[0].img_url}});">
-        <p class="large">{{movies[0].ranking}}</p>
+    <div class="front" style="background-image: url('{{ movie.img_url }}');">
+        <p class="large">{{movie.ranking}}</p>
     </div>
     <div class="back">
       <div>
-    <div class="title">{{movies[0].title}}<span class="release_date">{{movies[0].year}}</span></div>
+    <div class="title">{{movie.title}}<span class="release_date">{{movie.year}}</span></div>
         <div class="rating">
-            <label>{{movies[0].rating}}</label>
+            <label>{{movie.rating}}</label>
           <i class="fas fa-star star"></i>
         </div>
-          <p class="review">{{movies[0].review}}</p>
+          <p class="review">{{movie.review}}</p>
         <p class="overview">
-            {{movies[0].description}}
+            {{movie.description}}
         </p>
 
         <a href="{{url_for('edit',title=movies[0].title)}}" class="button">Update</a>
@@ -29,8 +29,9 @@
       </div>
     </div>
   </div>
-    {% endif %}
+    {% endfor %}
 </div>
+
 <div class="container text-center add">
 <a href="{{url_for('add')}}" class="button">Add Movie</a>
 </div>

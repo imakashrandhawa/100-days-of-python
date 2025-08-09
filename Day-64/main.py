@@ -1,4 +1,7 @@
+import os
+
 from flask import Flask, render_template, redirect, url_for, request
+from flask.cli import load_dotenv
 from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -25,6 +28,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
 Bootstrap5(app)
 
+load_dotenv()
 # CREATE DB
 class Base(DeclarativeBase):
   pass
@@ -34,14 +38,15 @@ db = SQLAlchemy(model_class=Base)
 
 # CREATE TABLE
 class Movie(db.Model):
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
     title: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
     year: Mapped[int] = mapped_column(Integer,nullable=False)
     description: Mapped[str] = mapped_column(String(250),nullable=False)
-    rating: Mapped[float] = mapped_column(Float,nullable=False)
-    ranking: Mapped[int] = mapped_column(Integer, nullable=False)
-    review: Mapped[str] = mapped_column(String(250), nullable=False)
+    rating: Mapped[float] = mapped_column(Float)
+    ranking: Mapped[int] = mapped_column(Integer)
+    review: Mapped[str] = mapped_column(String(250))
     img_url: Mapped[str] = mapped_column(String(250), nullable=False)
+
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///movies-collection.db"
 db.init_app(app)
@@ -88,7 +93,7 @@ class Add(FlaskForm):
 @app.route("/add",methods=["POST","GET"])
 def add():
     form=Add()
-    list=[]
+
     if form.validate_on_submit():
         url = "https://api.themoviedb.org/3/search/movie"
 
@@ -98,20 +103,45 @@ def add():
 
         headers = {
             "accept": "application/json",
-            "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5OTNhODNiNjgxNjFkZDc1MzIzYWVhMGEwYWZlYmYwOCIsIm5iZiI6MTc1NDU4MTUzNS42NzI5OTk5LCJzdWIiOiI2ODk0Y2ExZmNiZDk1Mjc4YTkyOGE1MTQiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.HAKaGFLMVmbjoJOIlpv6YPDixo4yrjR5aIPMrma29_0"
+            "Authorization": os.getenv("key")
         }
+
 
         response = (requests.get(url, headers=headers,params=params)).json()
         results=response['results']
-        for result in results:
-            list.append(f"{result['title']} {result['release_date']}")
-        print(list)
-        return render_template("select.html", movies=list)
+
+        return render_template("select.html", movies=results)
+
+
 
 
     return render_template("add.html",form=form)
 
+@app.route("/select/<int:id>")
+def select(id):
+    url_new = f"https://api.themoviedb.org/3/movie/{id}"
 
+
+
+    headers = {
+        "accept": "application/json",
+        "Authorization": os.getenv("key")
+    }
+
+    response_new = (requests.get(url_new, headers=headers)).json()
+    poster_path = response_new.get("poster_path")
+    img_url = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else ""
+    new_movie = Movie(title=response_new['original_title'],
+                      year=response_new['release_date'],
+                      description=response_new['overview'],
+                      rating=0,
+                      ranking=0,
+                      review="",
+                      img_url=img_url)
+    db.session.add(new_movie)
+    db.session.commit()
+
+    return redirect(url_for('edit',title=response_new['original_title']))
 
 if __name__ == '__main__':
     app.run(debug=True)
