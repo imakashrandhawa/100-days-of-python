@@ -99,6 +99,25 @@ def update(id):
             "Not found": "ID doesn't exist"
         }
 
+@app.route("/closed/<int:id>",methods=["DELETE"])
+def closed(id):
+    if request.args.get("api-key") == "TopScretAPIKey":
+        try:
+            cafe = db.session.execute(db.select(Cafe).where(Cafe.id == id)).scalar()
+            db.session.delete(cafe)
+            db.session.commit()
+            return{
+                "Success":"Cafe has been removed from the list"
+            }
+        except:
+            return {
+                "Failed":"Cafe does not exist"
+            }
+    else:
+        return {
+            "Not Allowed":"Make sure you have correct API key"
+        }
+
 
 
 
