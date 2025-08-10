@@ -1,7 +1,10 @@
+import json
+
 from flask import Flask, jsonify, render_template, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, Boolean
+import random
 
 '''
 Install the required packages first: 
@@ -49,6 +52,55 @@ with app.app_context():
 @app.route("/")
 def home():
     return render_template("index.html")
+
+def to_dict(self):
+    return {column.name: getattr(self, column.name) for column in self.__table__.columns}
+
+@app.route("/random")
+def get_random_cafe():
+    result = db.session.execute(db.select(Cafe))
+    all_cafes = result.scalars().all()
+    random_cafe = random.choice(all_cafes)
+    return jsonify(to_dict(random_cafe))
+
+@app.route("/all")
+def all_cafe():
+    result = db.session.execute(db.select(Cafe))
+    all_cafes = result.scalars().all()
+    new_cafes=[]
+    for cafe in all_cafes:
+        new_cafe=to_dict(cafe)
+        new_cafes.append(new_cafe)
+    return jsonify(new_cafes)
+
+@app.route("/add",methods=["POST"])
+def add():
+    name=request.form['name']
+    location=request.form['map_url']
+    print(name,location)
+    response={
+       "response":{
+           "success":"Successfully added the cafe"
+       }
+    }
+    return response
+
+@app.route("/update/<int:id>",methods=["GET","POST","PATCH"])
+def update(id):
+    try:
+        cafe = db.session.execute(db.select(Cafe).where(Cafe.id == id)).scalar()
+        cafe.coffee_price=request.args.get("new_price")
+        db.session.commit()
+        return {
+            "success":"Successfully updated the price."
+        }
+    except:
+        return {
+            "Not found": "ID doesn't exist"
+        }
+
+
+
 
 
 # HTTP GET - Read Record
