@@ -55,9 +55,14 @@ def register():
         password=request.form.get("password")
         hash_pass=generate_password_hash(password,method="pbkdf2:sha256",salt_length=8)
         user=User(email=email,password=hash_pass,name=name)
-        db.session.add(user)
-        db.session.commit()
-        return redirect(url_for("secrets",user=name))
+        old_user=(db.session.execute(db.select(User).where(User.email == email))).scalar()
+        if not old_user:
+            db.session.add(user)
+            db.session.commit()
+            return redirect(url_for("secrets",user=name))
+        else:
+            flash("Account already exist with that email. Please login.")
+            return redirect(url_for("register"))
 
     return render_template("register.html")
 
@@ -72,32 +77,18 @@ def login():
         email = request.form.get("email")
         passwor = request.form.get("password")
         user=(db.session.execute(db.select(User).where(User.email == email))).scalar()
-        if not user or not check_password_hash(user.password,passwor):
-            return render_template("login.html", feedback="User or Password Incorrect!!")
+        if not user:
+            flash("User doesn't exist")
+            return redirect(url_for("login"))
+        elif not check_password_hash(user.password,passwor):
+                flash("Wrong password.")
+                return redirect(url_for("login"))
         login_user(user)
         return redirect(url_for("secrets",user=user.name))
     return render_template("login.html")
 
 
-# @app.route('/login',methods=["POST","GET"])
-# def login():
-#     if request.method == "POST":
-#         email=request.form.get("email")
-#         password=request.form.get("password")
-#         hash_pass=generate_password_hash(password,method="pbkdf2:sha256",salt_length=8)
-#
-#
-#         users=(db.session.execute(db.select(User))).scalars()
-#         for user in users:
-#             if user.email == email:
-#                 if user.password == hash_pass:
-#                     return redirect(url_for("secrets", user=user.name))
-#                 else:
-#                     return render_template("login.html", feedback="Password Incorrect!!")
-#             else:
-#                 return render_template("login.html", feedback="User doesn't exist")
-#         return render_template("login.html", feedback="")
-#     return render_template("login.html", feedback="")
+
 
 
 
