@@ -1,3 +1,5 @@
+import datetime
+
 from flask import Flask, render_template, redirect, url_for
 from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
@@ -5,6 +7,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, Text
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
+from wtforms.fields.simple import URLField
 from wtforms.validators import DataRequired, URL
 from flask_ckeditor import CKEditor, CKEditorField
 from datetime import date
@@ -25,6 +28,7 @@ This will install the packages from the requirements.txt for this project.
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
 Bootstrap5(app)
+ck=CKEditor(app)
 
 # CREATE DATABASE
 class Base(DeclarativeBase):
@@ -64,9 +68,23 @@ def show_post(post_id):
     requested_post = (db.session.execute(db.select(BlogPost).where(BlogPost.id == post_id))).scalar()
     return render_template("post.html", post=requested_post)
 
+class Postform(FlaskForm):
+    title=StringField('Title',validators=[DataRequired()])
+    subtitle=StringField("Subtitle",validators=[DataRequired()])
+    name=StringField("Your Name",validators=[DataRequired()])
+    url= URLField("Url for bg Image",validators=[DataRequired()])
+    body=CKEditorField("body",validators=[DataRequired()])
+
 @app.route("/add_post",methods=["POST","GET"])
 def add_post():
-    return render_template("make-post.html")
+    print(datetime.date.today())
+    postform=Postform()
+    if postform.validate_on_submit():
+        new_post=BlogPost(title=postform.title.data,subtitle=postform.subtitle.data,date=datetime.date.today(),body=postform.body.data,author=postform.name.data,img_url=postform.url.data)
+        db.session.add(new_post)
+        db.session.commit()
+        return redirect(url_for("get_all_posts"))
+    return render_template("make-post.html",form=postform)
 
 
 # TODO: add_new_post() to create a new blog post
