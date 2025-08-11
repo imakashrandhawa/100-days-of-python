@@ -71,8 +71,8 @@ def show_post(post_id):
 class Postform(FlaskForm):
     title=StringField('Title',validators=[DataRequired()])
     subtitle=StringField("Subtitle",validators=[DataRequired()])
-    name=StringField("Your Name",validators=[DataRequired()])
-    url= URLField("Url for bg Image",validators=[DataRequired()])
+    author=StringField("Your Name",validators=[DataRequired()])
+    img_url= URLField("Url for bg Image",validators=[DataRequired()])
     body=CKEditorField("body",validators=[DataRequired()])
 
 @app.route("/add_post",methods=["POST","GET"])
@@ -84,11 +84,18 @@ def add_post():
         db.session.add(new_post)
         db.session.commit()
         return redirect(url_for("get_all_posts"))
-    return render_template("make-post.html",form=postform)
+    return render_template("make-post.html",form=postform,heading="New Post")
 
+@app.route("/edit-post/<int:post_id>",methods=["GET","POST"])
+def edit_post(post_id):
+    requested_post = (db.session.execute(db.select(BlogPost).where(BlogPost.id == post_id))).scalar()
+    postform = Postform(obj=requested_post)
 
-# TODO: add_new_post() to create a new blog post
-
+    if postform.validate_on_submit():
+        postform.populate_obj(requested_post)
+        db.session.commit()
+        return redirect(url_for("show_post",post_id=post_id))
+    return render_template("make-post.html",form=postform,heading="Edit Post")
 # TODO: edit_post() to change an existing blog post
 
 # TODO: delete_post() to remove a blog post from the database
