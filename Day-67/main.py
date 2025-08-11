@@ -51,16 +51,22 @@ with app.app_context():
 
 @app.route('/')
 def get_all_posts():
-    # TODO: Query the database for all the posts. Convert the data to a python list.
+    all_posts=(db.session.execute(db.select(BlogPost).order_by(BlogPost.id))).scalars()
     posts = []
+    for post in all_posts:
+        posts.append(post)
     return render_template("index.html", all_posts=posts)
 
 # TODO: Add a route so that you can click on individual posts.
-@app.route('/')
+@app.route('/show_post/<int:post_id>')
 def show_post(post_id):
     # TODO: Retrieve a BlogPost from the database based on the post_id
-    requested_post = "Grab the post from your database"
+    requested_post = (db.session.execute(db.select(BlogPost).where(BlogPost.id == post_id))).scalar()
     return render_template("post.html", post=requested_post)
+
+@app.route("/add_post",methods=["POST","GET"])
+def add_post():
+    return render_template("make-post.html")
 
 
 # TODO: add_new_post() to create a new blog post

@@ -1,5 +1,6 @@
 ask==2.3.2
 Requests==2.31.0
 
-WTForms~=3.2.1
+WTForms~=3.0.1
 Flask~=2.3.2
+SQLAlchemy~=2.0.25
