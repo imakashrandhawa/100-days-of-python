@@ -1,9 +1,12 @@
 from flask import Flask, render_template, request, url_for, redirect, flash, send_from_directory
+from flask_wtf import FlaskForm
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
+from wtforms.fields.simple import StringField, EmailField, PasswordField
+from wtforms.validators import DataRequired
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret-key-goes-here'
@@ -29,6 +32,7 @@ class User(db.Model):
     name: Mapped[str] = mapped_column(String(1000))
 
 
+
 with app.app_context():
     db.create_all()
 
@@ -38,8 +42,18 @@ def home():
     return render_template("index.html")
 
 
-@app.route('/register')
+@app.route('/register',methods=["POST","GET"])
 def register():
+    if request.method == "POST":
+        name=request.form.get("name")
+        email=request.form.get("email")
+        password=request.form.get("password")
+
+        user=User(email=email,password=password,name=name)
+        db.session.add(user)
+        db.session.commit()
+        return redirect(url_for("secrets"))
+
     return render_template("register.html")
 
 
