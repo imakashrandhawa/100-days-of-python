@@ -59,7 +59,8 @@ def register():
         if not old_user:
             db.session.add(user)
             db.session.commit()
-            return redirect(url_for("secrets",user=name))
+
+            return redirect(url_for("secrets",user=name,logged_in="yes"))
         else:
             flash("Account already exist with that email. Please login.")
             return redirect(url_for("register"))
@@ -84,7 +85,7 @@ def login():
                 flash("Wrong password.")
                 return redirect(url_for("login"))
         login_user(user)
-        return redirect(url_for("secrets",user=user.name))
+        return redirect(url_for("secrets",user=user.name,logged_in="yes"))
     return render_template("login.html")
 
 
@@ -96,7 +97,7 @@ def login():
 @app.route('/secrets/<string:user>')
 @login_required
 def secrets(user):
-    return render_template("secrets.html",name=user)
+    return render_template("secrets.html",name=user,logged_in="yes")
 
 
 @app.route('/logout')
