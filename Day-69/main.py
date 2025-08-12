@@ -1,4 +1,7 @@
 from datetime import date
+from tkinter import Listbox
+from typing import List
+
 from flask import Flask, abort, render_template, redirect, url_for, flash
 from flask_bootstrap import Bootstrap5
 from flask_ckeditor import CKEditor
@@ -6,7 +9,7 @@ from flask_gravatar import Gravatar
 from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship, DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import Integer, String, Text
+from sqlalchemy import Integer, String, Text, ForeignKey
 from forms import RegistrationForm,LoginForm
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -49,20 +52,23 @@ login_manager.init_app(app)
 class BlogPost(db.Model):
     __tablename__ = "blog_posts"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    author_id:Mapped[int]=mapped_column(ForeignKey("user_table.id"))
     title: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
     subtitle: Mapped[str] = mapped_column(String(250), nullable=False)
     date: Mapped[str] = mapped_column(String(250), nullable=False)
-    body: Mapped[str] = mapped_column(Text, nullable=False)
+    body: Mapped[str] = mapped_column(String(10000), nullable=False)
     author: Mapped[str] = mapped_column(String(250), nullable=False)
     img_url: Mapped[str] = mapped_column(String(250), nullable=False)
 
 
 # TODO: Create a User table for all your registered users.
 class User(db.Model,UserMixin):
+    __tablename__="user_table"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name:Mapped[str]=mapped_column(String(100),nullable=False)
     email:Mapped[str]=mapped_column(String(100),unique=True,nullable=False)
     password:Mapped[str]=mapped_column(String(500),nullable=False)
+    blog_child:Mapped[List["BlogPost"]]=relationship()
 
 
 
@@ -81,7 +87,7 @@ def register():
             db.session.add(new_user)
             db.session.commit()
             login_user(new_user)
-            return redirect(url_for("get_all_posts"))
+            return redirect(url_for("get_all_posts",user=user))
         else:
             flash("Email already exits.Please Log in!")
             return redirect(url_for("login",form=LoginForm()))
@@ -106,7 +112,7 @@ def login():
             return redirect(url_for("login",form=form))
         else:
             login_user(user)
-            return redirect(url_for("get_all_posts"))
+            return redirect(url_for("get_all_posts",user=user))
     return render_template("login.html",form=form)
 
 
@@ -120,10 +126,16 @@ def logout():
 def get_all_posts():
     result = db.session.execute(db.select(BlogPost))
     posts = result.scalars().all()
-    return render_template("index.html", all_posts=posts)
+    user=current_user
+    if not user:
+        user="nouser"
+        return render_template("index.html", all_posts=posts,user=user)
+
+    return render_template("index.html", all_posts=posts,user=user)
 
 
 # TODO: Allow logged-in users to comment on posts
+
 @app.route("/post/<int:post_id>")
 def show_post(post_id):
     requested_post = db.get_or_404(BlogPost, post_id)
@@ -131,17 +143,28 @@ def show_post(post_id):
 
 
 # TODO: Use a decorator so only an admin user can create a new post
+def admin_only(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if not current_user.is_authenticated or current_user.id != 1:
+            return abort(403)   # or redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return wrapper
+
+
 @app.route("/new-post", methods=["GET", "POST"])
+@admin_only
 def add_new_post():
     form = CreatePostForm()
     if form.validate_on_submit():
         new_post = BlogPost(
             title=form.title.data,
+            author_id=current_user.id,
             subtitle=form.subtitle.data,
+            date=date.today().strftime("%B %d, %Y"),
             body=form.body.data,
-            img_url=form.img_url.data,
-            author=current_user,
-            date=date.today().strftime("%B %d, %Y")
+            author=current_user.name,
+            img_url=form.img_url.data
         )
         db.session.add(new_post)
         db.session.commit()
@@ -151,20 +174,22 @@ def add_new_post():
 
 # TODO: Use a decorator so only an admin user can edit a post
 @app.route("/edit-post/<int:post_id>", methods=["GET", "POST"])
+@admin_only
 def edit_post(post_id):
     post = db.get_or_404(BlogPost, post_id)
     edit_form = CreatePostForm(
+        author_id=current_user.id,
         title=post.title,
         subtitle=post.subtitle,
         img_url=post.img_url,
-        author=post.author,
+        author=current_user.name,
         body=post.body
     )
     if edit_form.validate_on_submit():
         post.title = edit_form.title.data
         post.subtitle = edit_form.subtitle.data
         post.img_url = edit_form.img_url.data
-        post.author = current_user
+        post.author = current_user.name
         post.body = edit_form.body.data
         db.session.commit()
         return redirect(url_for("show_post", post_id=post.id))
@@ -173,6 +198,7 @@ def edit_post(post_id):
 
 # TODO: Use a decorator so only an admin user can delete a post
 @app.route("/delete/<int:post_id>")
+@admin_only
 def delete_post(post_id):
     post_to_delete = db.get_or_404(BlogPost, post_id)
     db.session.delete(post_to_delete)
