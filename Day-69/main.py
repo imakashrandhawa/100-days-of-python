@@ -75,15 +75,22 @@ with app.app_context():
 def register():
     form=RegistrationForm()
     if form.validate_on_submit():
-        user=User(name=form.name.data,email=form.email.data,password=generate_password_hash(form.password.data,method="pbkdf2:sha256",salt_length=8))
-        db.session.add(user)
-        db.session.commit()
-        return redirect(url_for("get_all_posts"))
+        user = (db.session.execute(db.select(User).where(User.email == form.email.data))).scalar()
+        if not user:
+            new_user=User(name=form.name.data,email=form.email.data,password=generate_password_hash(form.password.data,method="pbkdf2:sha256",salt_length=8))
+            db.session.add(new_user)
+            db.session.commit()
+            login_user(new_user)
+            return redirect(url_for("get_all_posts"))
+        else:
+            flash("Email already exits.Please Log in!")
+            return redirect(url_for("login",form=LoginForm()))
+
     return render_template("register.html",form=form)
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.get(user_id)
+    return db.session.get(User,int(user_id))
 
 # TODO: Retrieve a user from the database based on their email. 
 @app.route('/login', methods=['GET', 'POST'])
@@ -98,12 +105,14 @@ def login():
             flash("Incorrect Password")
             return redirect(url_for("login",form=form))
         else:
+            login_user(user)
             return redirect(url_for("get_all_posts"))
     return render_template("login.html",form=form)
 
 
 @app.route('/logout')
 def logout():
+    logout_user()
     return redirect(url_for('get_all_posts'))
 
 
